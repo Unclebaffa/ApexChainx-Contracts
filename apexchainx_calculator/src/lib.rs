@@ -75,6 +75,20 @@ pub struct SLAResult {
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SLAConfigEntry {
+    pub severity: Symbol,
+    pub config: SLAConfig,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SLAConfigSnapshot {
+    pub version: Symbol,
+    pub entries: Vec<SLAConfigEntry>,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SLAResultSchema {
     pub version: Symbol,
     pub schema_version: u32,
@@ -246,23 +260,45 @@ impl SLACalculatorContract {
         env.storage().instance().get(&CONFIG_KEY).ok_or(SLAError::NotInitialized)
     }
 
-    /// Returns the backend-facing result schema contract used by this version
-    /// of the SLA calculator.
-    pub fn get_result_schema(env: Env) -> Result<SLAResultSchema, SLAError> {
-        Self::check_version(&env)?;
-        Ok(SLAResultSchema {
-            version: symbol_short!("v1"),
-            schema_version: RESULT_SCHEMA_VERSION,
-            status_met: symbol_short!("met"),
-            status_violated: symbol_short!("viol"),
-            payment_reward: symbol_short!("rew"),
-            payment_penalty: symbol_short!("pen"),
-            rating_exceptional: symbol_short!("top"),
-            rating_excellent: symbol_short!("excel"),
-            rating_good: symbol_short!("good"),
-            rating_poor: symbol_short!("poor"),
-        })
+
+    /// Returns a deterministic backend-friendly snapshot of all config values.
+    pub fn get_config_snapshot(env: Env) -> Result<SLAConfigSnapshot, SLAError> {
+    Self::check_version(&env)?;
+
+    let mut entries = Vec::new(&env);
+    let severities = [
+        symbol_short!("critical"),
+        symbol_short!("high"),
+        symbol_short!("medium"),
+        symbol_short!("low"),
+    ];
+
+    for severity in severities {
+        let config = Self::load_config(&env, &severity)?;
+        entries.push_back(SLAConfigEntry { severity, config });
     }
+
+    Ok(SLAConfigSnapshot {
+        version: symbol_short!("v1"),
+        entries,
+    })
+}
+
+pub fn get_result_schema(env: Env) -> Result<SLAResultSchema, SLAError> {
+    Self::check_version(&env)?;
+    Ok(SLAResultSchema {
+        version: symbol_short!("v1"),
+        schema_version: RESULT_SCHEMA_VERSION,
+        status_met: symbol_short!("met"),
+        status_violated: symbol_short!("viol"),
+        payment_reward: symbol_short!("rew"),
+        payment_penalty: symbol_short!("pen"),
+        rating_exceptional: symbol_short!("top"),
+        rating_excellent: symbol_short!("excel"),
+        rating_good: symbol_short!("good"),
+        rating_poor: symbol_short!("poor"),
+    })
+}
 
     // -------------------------------------------------------------------
     // #29 – Stats view
