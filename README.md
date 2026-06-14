@@ -57,27 +57,50 @@ Main crate manifest:
 
 - `apexchainx_calculator/Cargo.toml`
 
-## Current Contract Surface
+## Contract API Reference
 
-The active contract is in:
+The active contract implementation is in:
 
 - `apexchainx_calculator/src/lib.rs`
+- `apexchainx_calculator/src/tests.rs` (test suite)
 
-The current implementation includes:
+### Core Functions
 
-- initialization with admin and operator roles
-- severity-based SLA configuration
-- admin-controlled config updates
-- operator-gated `calculate_sla`
-- read-only `calculate_sla_view`
-- backend-friendly `get_config_snapshot`
-- pause and unpause controls
-- cumulative SLA statistics
-- history retrieval and pruning
+| Function | Auth | Description |
+|----------|------|-------------|
+| `initialize(admin, operator)` | — (once) | One-time setup with role assignment |
+| `set_config(caller, severity, threshold, penalty, reward)` | Admin | Update severity configuration |
+| `get_config(severity)` | Public | Read a single severity config |
+| `get_config_snapshot()` | Public | Ordered snapshot of all severity configs |
+| `calculate_sla(caller, outage_id, severity, mttr)` | Operator | Execute SLA calculation (mutating) |
+| `calculate_sla_view(outage_id, severity, mttr)` | Public | Simulate SLA calculation (read-only) |
 
-Tests live in:
+### Governance Functions
 
-- `apexchainx_calculator/src/tests.rs`
+| Function | Auth | Description |
+|----------|------|-------------|
+| `propose_admin(caller, new_admin)` | Admin | Initiate two-step admin transfer |
+| `accept_admin(caller)` | Proposed | Complete admin transfer |
+| `cancel_admin_proposal(caller)` | Admin | Cancel pending admin proposal |
+| `propose_operator(caller, new_operator)` | Admin | Initiate operator rotation |
+| `accept_operator(caller)` | Proposed | Complete operator rotation |
+| `cancel_operator_proposal(caller)` | Admin | Cancel pending operator proposal |
+| `renounce_admin(caller)` | Admin | Irreversibly remove admin authority |
+
+### State & Utility Functions
+
+| Function | Auth | Description |
+|----------|------|-------------|
+| `pause(caller, reason)` | Admin | Pause contract with metadata |
+| `unpause(caller)` | Admin | Resume contract operations |
+| `get_paused()` | Public | Check pause state |
+| `get_pause_info()` | Public | Get pause metadata |
+| `get_stats()` | Public | Read cumulative SLA statistics |
+| `get_history()` | Public | Paginated SLA calculation history |
+| `prune_history(caller)` | Admin | Compact on-chain history storage |
+| `get_result_schema()` | Public | Versioned result schema descriptor |
+| `get_config_version_hash()` | Public | Deterministic config fingerprint |
+| `get_version_info()` | Public | Version negotiation metadata |
 
 ## Project Structure
 
