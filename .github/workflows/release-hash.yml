@@ -1,16 +1,31 @@
-name: Release Artifact Hash Manifest
-
-# SC-003 (#123) – Produce and verify a deterministic hash manifest for the
-# release WASM artifact so operators can confirm what they are deploying.
+# =============================================================================
+# ApexChainx Contracts — Release Artifact Hash Manifest
+# =============================================================================
 #
-# Manifest format (manifest.sha256):
+# Reference: SC-003 (#123)
+#
+# Purpose:
+#   Produce and verify a deterministic SHA-256 hash manifest for the release
+#   WASM artifact, enabling operators to confirm deployment integrity.
+#
+# Why this matters:
+#   Every deployed contract instance should be verifiably built from the
+#   same source that passed CI. This workflow ensures that the WASM binary
+#   deployed to production can be traced back to a specific git commit.
+#
+# Triggered on:
+#   - Push to main branch (generates manifest for latest build)
+#   - Pull requests targeting main (preview manifest)
+#   - Version tags v* (attaches manifest + WASM to GitHub Release)
+#
+# Artifact format (manifest.sha256):
 #   <sha256hex>  apexchainx_calculator.wasm
 #
-# Verification:
+# Verification command:
 #   sha256sum -c manifest.sha256
-#
-# The manifest is uploaded as a workflow artifact on every run and attached
-# to GitHub Releases when triggered by a version tag (v*).
+# =============================================================================
+
+name: Release Artifact Hash Manifest
 
 on:
   push:
