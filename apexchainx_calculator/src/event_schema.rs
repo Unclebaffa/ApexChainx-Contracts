@@ -17,20 +17,20 @@
 //! Emitted on every successful `calculate_sla` call.
 //! - topic[2]: severity Symbol
 //! - payload:  (outage_id: Symbol, status: Symbol, payment_type: Symbol,
-//!              rating: Symbol, mttr_minutes: u32, threshold_minutes: u32,
-//!              amount: i128)
+//!   rating: Symbol, mttr_minutes: u32, threshold_minutes: u32,
+//!   amount: i128)
 //!
 //! ## set_int (`set_int`)
 //! Settlement intent emitted alongside sla_calc for backend reconciliation.
 //! - topic[2]: severity Symbol
 //! - payload:  (outage_id: Symbol, status: Symbol, payment_type: Symbol,
-//!              amount: i128, config_version_hash: u64, recorded_at: u64)
+//!   amount: i128, config_version_hash: u64, recorded_at: u64)
 //!
 //! ## cfg_upd (`cfg_upd`)
 //! Emitted on every successful `set_config` call.
 //! - topic[2]: severity Symbol
 //! - payload:  (threshold_minutes: u32, penalty_per_minute: i128,
-//!              reward_base: i128)
+//!   reward_base: i128)
 //!
 //! ## paused (`paused`)
 //! Emitted when the contract is paused.
@@ -99,6 +99,8 @@
 //! end) are NOT considered breaking and do not require a version bump as long
 //! as old consumers ignore unrecognised trailing fields.
 
+#![expect(dead_code)]
+
 use soroban_sdk::{symbol_short, Symbol};
 
 /// Canonical event version symbol used by all events.
@@ -128,8 +130,8 @@ pub fn current_event_version() -> Symbol {
 
 #[cfg(test)]
 mod tests {
-    use alloc::format;
     use super::*;
+    use alloc::format;
     use soroban_sdk::Env;
 
     #[test]
@@ -159,7 +161,11 @@ mod tests {
 
         for i in 0..names.len() {
             for j in (i + 1)..names.len() {
-                assert_ne!(names[i], names[j], "event name collision: {:?} == {:?}", names[i], names[j]);
+                assert_ne!(
+                    names[i], names[j],
+                    "event name collision: {:?} == {:?}",
+                    names[i], names[j]
+                );
             }
         }
     }

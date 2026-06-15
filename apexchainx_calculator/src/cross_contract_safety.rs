@@ -97,13 +97,11 @@ pub fn safe_invoke_contract(
             raw_output: Val::from(false),
             error_symbol: Some(Symbol::new(env, "CROSS_CONTRACT_FAILURE")),
         },
-        Err(_err) => {
-            SafeCallResult {
-                status: CrossContractCallStatus::FatalError,
-                raw_output: Val::from(false),
-                error_symbol: Some(Symbol::new(env, "CROSS_CONTRACT_FAILURE")),
-            }
-        }
+        Err(_err) => SafeCallResult {
+            status: CrossContractCallStatus::FatalError,
+            raw_output: Val::from(false),
+            error_symbol: Some(Symbol::new(env, "CROSS_CONTRACT_FAILURE")),
+        },
     }
 }
 
@@ -175,7 +173,7 @@ impl CrossContractSafety {
 
     /// Whether there are any compensations registered.
     pub fn has_pending(&self) -> bool {
-        self.compensation_stack.len() > 0
+        !self.compensation_stack.is_empty()
     }
 }
 
@@ -203,12 +201,7 @@ mod tests {
     fn test_safe_invoke_unknown_contract_returns_fatal_error() {
         let env = Env::default();
         let unknown = Address::generate(&env);
-        let result = safe_invoke_contract(
-            &env,
-            &unknown,
-            &symbol_short!("ping"),
-            &[],
-        );
+        let result = safe_invoke_contract(&env, &unknown, &symbol_short!("ping"), &[]);
         assert_eq!(result.status, CrossContractCallStatus::FatalError);
         assert!(result.error_symbol.is_some());
     }
@@ -218,7 +211,9 @@ mod tests {
         assert!(requires_rollback(CrossContractCallStatus::FatalError));
         assert!(requires_rollback(CrossContractCallStatus::DispatchFailed));
         assert!(!requires_rollback(CrossContractCallStatus::Success));
-        assert!(!requires_rollback(CrossContractCallStatus::RecoverableError));
+        assert!(!requires_rollback(
+            CrossContractCallStatus::RecoverableError
+        ));
     }
 
     #[test]

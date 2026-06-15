@@ -38,7 +38,12 @@ mod coordination_harness_tests {
     // -----------------------------------------------------------------------
     // Helper: build a mock peer info
     // -----------------------------------------------------------------------
-    fn peer_info(name: &str, protocol: u32, storage: u32, min_compat: u32) -> VersionNegotiationInfo {
+    fn peer_info(
+        name: &str,
+        protocol: u32,
+        storage: u32,
+        min_compat: u32,
+    ) -> VersionNegotiationInfo {
         VersionNegotiationInfo {
             contract_name: Symbol::new(&Env::default(), name),
             protocol_version: protocol,
@@ -271,7 +276,7 @@ mod coordination_harness_tests {
         );
 
         // Step 2: Generate correlation ID for the workflow
-        let outage_id = Symbol::new(&env, "WF-2024-001");
+        let outage_id = Symbol::new(&env, "WF_2024_001");
         let ledger_seq = 50000u32;
         let corr_id = event_correlation::generate_correlation_id(&env, &outage_id, ledger_seq);
         assert_ne!(corr_id, 0, "Step 2: Correlation ID must be non-zero");
